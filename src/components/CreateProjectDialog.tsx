@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { CalendarIcon, CheckIcon, PlusCircleIcon, UserIcon } from "lucide-react";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -17,6 +19,7 @@ interface CreateProjectDialogProps {
 export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
+  const [selectedSpecialists, setSelectedSpecialists] = useState<string[]>([]);
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -30,35 +33,50 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     }
   };
 
+  const toggleSpecialist = (id: string) => {
+    if (selectedSpecialists.includes(id)) {
+      setSelectedSpecialists(selectedSpecialists.filter((item) => item !== id));
+    } else {
+      setSelectedSpecialists([...selectedSpecialists, id]);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Здесь будет логика отправки формы
-    alert("Бриф успешно создан!");
+    // Логика отправки формы
+    alert("Бриф успешно создан! Скоро с вами свяжутся специалисты.");
     onOpenChange(false);
     setCurrentStep(1); // Сбрасываем шаг при закрытии
   };
 
+  // Моковые данные специалистов
+  const specialists = [
+    { id: "s1", name: "Алексей Иванов", role: "Графический дизайнер", rating: 4.9, projects: 23 },
+    { id: "s2", name: "Елена Петрова", role: "Брендинг-стратег", rating: 4.8, projects: 17 },
+    { id: "s3", name: "Дмитрий Соколов", role: "Веб-дизайнер", rating: 4.7, projects: 31 }
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-brand">Создание нового проекта</DialogTitle>
+          <DialogTitle className="text-2xl font-brand">Создание брифа проекта</DialogTitle>
           <DialogDescription>
-            Заполните форму брифа, чтобы начать работу над вашим брендом.
+            Заполните форму брифа для поиска подходящих специалистов и команд.
             {currentStep > 1 && ` Шаг ${currentStep} из ${totalSteps}.`}
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {currentStep === 1 && (
             <div className="space-y-6 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="project-name">Название проекта</Label>
+              <div className="space-y-3">
+                <Label htmlFor="project-name">Название проекта <span className="text-red-500">*</span></Label>
                 <Input id="project-name" placeholder="Введите название вашего проекта" required />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="industry">Отрасль / сфера деятельности</Label>
+              <div className="space-y-3">
+                <Label htmlFor="industry">Отрасль / сфера деятельности <span className="text-red-500">*</span></Label>
                 <Select required>
                   <SelectTrigger id="industry">
                     <SelectValue placeholder="Выберите отрасль" />
@@ -70,24 +88,25 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                     <SelectItem value="education">Образование</SelectItem>
                     <SelectItem value="healthcare">Здравоохранение</SelectItem>
                     <SelectItem value="finance">Финансы / Банкинг</SelectItem>
+                    <SelectItem value="architecture">Архитектура / Строительство</SelectItem>
                     <SelectItem value="entertainment">Развлечения</SelectItem>
                     <SelectItem value="other">Другое</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="project-description">Краткое описание</Label>
+              <div className="space-y-3">
+                <Label htmlFor="project-description">Краткое описание <span className="text-red-500">*</span></Label>
                 <Textarea 
                   id="project-description" 
-                  placeholder="Опишите ваш проект в нескольких предложениях" 
+                  placeholder="Опишите ваш проект, его цели и что вы хотите получить в результате" 
                   rows={4}
                   required
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label>Тип проекта</Label>
+              <div className="space-y-3">
+                <Label>Тип проекта <span className="text-red-500">*</span></Label>
                 <RadioGroup defaultValue="new" required>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="new" id="new" />
@@ -103,13 +122,22 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                   </div>
                 </RadioGroup>
               </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="company-info">Информация о компании</Label>
+                <Textarea 
+                  id="company-info" 
+                  placeholder="Расскажите о вашей компании, её истории, ценностях и миссии" 
+                  rows={3}
+                />
+              </div>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="space-y-6 py-4">
-              <div className="space-y-2">
-                <Label>Что вам нужно разработать? (можно выбрать несколько)</Label>
+              <div className="space-y-3">
+                <Label>Что требуется разработать? <span className="text-red-500">*</span></Label>
                 <div className="grid grid-cols-2 gap-4 mt-2">
                   <div className="flex items-start space-x-2">
                     <Checkbox id="logo" />
@@ -135,67 +163,54 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                     <Checkbox id="strategy" />
                     <Label htmlFor="strategy" className="leading-tight">Стратегия бренда</Label>
                   </div>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox id="interior" />
+                    <Label htmlFor="interior" className="leading-tight">Дизайн интерьера</Label>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox id="architecture" />
+                    <Label htmlFor="architecture" className="leading-tight">Архитектурный проект</Label>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="target-audience">Целевая аудитория</Label>
+              <div className="space-y-3">
+                <Label htmlFor="target-audience">Целевая аудитория <span className="text-red-500">*</span></Label>
                 <Textarea 
                   id="target-audience" 
-                  placeholder="Опишите вашу целевую аудиторию (возраст, пол, интересы, место проживания и т.д.)" 
+                  placeholder="Опишите вашу целевую аудиторию (возраст, пол, интересы, потребности, место проживания и т.д.)" 
                   rows={3}
+                  required
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label htmlFor="competitors">Ваши конкуренты</Label>
                 <Textarea 
                   id="competitors" 
-                  placeholder="Перечислите ваших основных конкурентов" 
+                  placeholder="Перечислите ваших основных конкурентов и что вам нравится/не нравится в их брендах" 
                   rows={3}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="budget">Бюджет проекта</Label>
-                <Select>
+              <div className="space-y-3">
+                <Label htmlFor="budget">Бюджет проекта <span className="text-red-500">*</span></Label>
+                <Select required>
                   <SelectTrigger id="budget">
-                    <SelectValue placeholder="Выберите бюджет" />
+                    <SelectValue placeholder="Выберите диапазон бюджета" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">До 100 000 ₽</SelectItem>
-                    <SelectItem value="medium">100 000 - 300 000 ₽</SelectItem>
-                    <SelectItem value="high">300 000 - 500 000 ₽</SelectItem>
-                    <SelectItem value="enterprise">Свыше 500 000 ₽</SelectItem>
+                    <SelectItem value="lowbud">До 100 000 ₽</SelectItem>
+                    <SelectItem value="mediumbud">100 000 - 300 000 ₽</SelectItem>
+                    <SelectItem value="highbud">300 000 - 500 000 ₽</SelectItem>
+                    <SelectItem value="enterprisebud">Свыше 500 000 ₽</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="space-y-6 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="visual-style">Предпочитаемый визуальный стиль</Label>
-                <Textarea 
-                  id="visual-style" 
-                  placeholder="Опишите, какой визуальный стиль вы предпочитаете (минимализм, яркий и красочный, корпоративный и т.д.)" 
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="inspiration">Примеры для вдохновения</Label>
-                <Textarea 
-                  id="inspiration" 
-                  placeholder="Добавьте ссылки на бренды или проекты, которые вам нравятся" 
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="timeline">Сроки выполнения</Label>
-                <Select>
+              
+              <div className="space-y-3">
+                <Label htmlFor="timeline">Сроки выполнения <span className="text-red-500">*</span></Label>
+                <Select required>
                   <SelectTrigger id="timeline">
                     <SelectValue placeholder="Выберите примерные сроки" />
                   </SelectTrigger>
@@ -207,28 +222,122 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          )}
 
-              <div className="space-y-2">
-                <Label>Как вы предпочитаете выбирать специалистов?</Label>
-                <RadioGroup defaultValue="platform-choice" required>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="platform-choice" id="platform-choice" />
-                    <Label htmlFor="platform-choice">Платформа предложит подходящих специалистов</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="self-selection" id="self-selection" />
-                    <Label htmlFor="self-selection">Хочу самостоятельно выбрать специалистов</Label>
-                  </div>
-                </RadioGroup>
+          {currentStep === 3 && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-3">
+                <Label htmlFor="visual-style">Предпочитаемый визуальный стиль</Label>
+                <Textarea 
+                  id="visual-style" 
+                  placeholder="Опишите, какой визуальный стиль вы предпочитаете (минимализм, яркий и красочный, корпоративный и т.д.)" 
+                  rows={3}
+                />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
+                <Label htmlFor="inspiration">Примеры для вдохновения</Label>
+                <Textarea 
+                  id="inspiration" 
+                  placeholder="Добавьте ссылки на бренды или проекты, которые вам нравятся" 
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label>Как вы хотите выбирать специалистов? <span className="text-red-500">*</span></Label>
+                <Tabs defaultValue="platform" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="platform">Платформа предложит</TabsTrigger>
+                    <TabsTrigger value="manual">Выберу сам(а)</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="platform" className="p-4 border rounded-md mt-2">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Наша платформа подберет подходящих специалистов на основе вашего брифа 
+                      и они свяжутся с вами для обсуждения деталей.
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="teamwork" />
+                      <Label htmlFor="teamwork">Предпочитаю работу в команде специалистов</Label>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="manual" className="space-y-4 p-4 border rounded-md mt-2">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Выберите специалистов, с которыми хотели бы работать:
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {specialists.map((specialist) => (
+                        <div 
+                          key={specialist.id}
+                          className={`p-3 border rounded-md cursor-pointer transition-colors ${
+                            selectedSpecialists.includes(specialist.id) 
+                              ? "border-primary bg-primary/5" 
+                              : "hover:border-muted-foreground"
+                          }`}
+                          onClick={() => toggleSpecialist(specialist.id)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                                <UserIcon className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{specialist.name}</p>
+                                <p className="text-sm text-muted-foreground">{specialist.role}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                ⭐ {specialist.rating}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {specialist.projects} проектов
+                              </Badge>
+                              {selectedSpecialists.includes(specialist.id) && (
+                                <CheckIcon className="w-5 h-5 text-primary" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      <PlusCircleIcon className="w-4 h-4" />
+                      Показать больше специалистов
+                    </Button>
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              <div className="space-y-3">
                 <Label htmlFor="additional-info">Дополнительная информация</Label>
                 <Textarea 
                   id="additional-info" 
                   placeholder="Любая дополнительная информация, которая может быть полезна для проекта" 
                   rows={3}
                 />
+              </div>
+              
+              <div className="space-y-2 bg-muted/50 p-4 rounded-md">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="terms" required />
+                  <Label htmlFor="terms" className="text-sm">
+                    Я согласен с <a href="#" className="text-primary hover:underline">условиями предоставления услуг</a> и <a href="#" className="text-primary hover:underline">политикой конфиденциальности</a>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="updates" />
+                  <Label htmlFor="updates" className="text-sm">
+                    Я хочу получать обновления о статусе проекта на email
+                  </Label>
+                </div>
               </div>
             </div>
           )}
